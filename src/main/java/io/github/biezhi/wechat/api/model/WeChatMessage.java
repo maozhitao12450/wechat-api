@@ -117,4 +117,5 @@ public class WeChatMessage {
         return fromUserName.contains("@@") || toUserName.contains("@@");
     }
 
+
 }

@@ -29,7 +29,7 @@ public class MyBot extends WeChatBot {
     @Bind(msgType = MsgType.ALL, accountType = AccountType.TYPE_GROUP)
     public void groupMessage(WeChatMessage message) {
         log.info("接收到群 [{}] 的消息: {}", message.getName(), message.getText());
-        this.api().sendText(message.getFromUserName(), "自动回复: " + message.getText());
+//        this.api().sendText(message.getFromUserName(), "自动回复: " + message.getText());
     }
 
     /**
@@ -41,7 +41,22 @@ public class MyBot extends WeChatBot {
     public void friendMessage(WeChatMessage message) {
         if (StringUtils.isNotEmpty(message.getName())) {
             log.info("接收到好友 [{}] 的消息: {}", message.getName(), message.getText());
-            this.api().sendText(message.getFromUserName(), "自动回复: " + message.getText());
+//            this.api().sendText(message.getFromUserName(), "自动回复: " + message.getText());
+//            this.api().sendFile("战斗型美少女", "/Users/biezhi/Desktop/Hot_Spots_blade2.0.4_alpha1.html");
+        }
+    }
+
+    /**
+     * 绑定私聊消息
+     *
+     * @param message
+     */
+    @Bind(msgType = {MsgType.UNKNOWN}, accountType = AccountType.TYPE_FRIEND)
+    public void 啊哈(WeChatMessage message) {
+
+        if (StringUtils.isNotEmpty(message.getName())) {
+            log.info("接收到好友 [{}] 的消息: {}", message.getName(), message.getText());
+//            this.api().sendText(message.getFromUserName(), "自动回复: " + message.getText());
 //            this.api().sendFile("战斗型美少女", "/Users/biezhi/Desktop/Hot_Spots_blade2.0.4_alpha1.html");
         }
     }
@@ -60,7 +75,7 @@ public class MyBot extends WeChatBot {
     }
 
     public static void main(String[] args) {
-        new MyBot(Config.me().autoLogin(true).showTerminal(true)).start();
+        new com.sfygroup.wechat.bot.MyBot(Config.me().autoLogin(true).showTerminal(true)).start();
     }
 
 }

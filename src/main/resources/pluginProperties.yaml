@@ -1,0 +1,37 @@
+# 指令 ${now:日期} -> yyyy-MM-dd
+# 指令 ${suffix} -> 将【|】符号后的部分替换${suffix}
+operation:
+  司米日报: E:\sogal\weixin\wechat-api\assets\photo/司米日报_${now:日期}.png
+
+# 支持指令@我 的群聊
+community:
+  报表测试: "报表测试"
+
+# 支持直接向我发信息的用户，目前只支持管理指令 startup shutdown
+adminUser:
+  YFY: YFY
+  崔宝辉: 崔宝辉
+
+# 指令集
+timer:
+  operation:
+    startup: "启动定时器"
+    shutdown: "关闭定时器"
+
+# 定时器配置
+schedule:
+  # 定时器重复时间间隔
+  delay: 10
+  # 间隔单位
+  unit: SECONDS
+  # 触发时间
+  start:
+    hour: 11
+    minute: 20
+
+# 定时器 定时发送消息群组 格式为数组
+groupMessages:
+    # 群昵称
+  - fromNickName: 报表测试
+    # 发送指令
+    text: 司米日报

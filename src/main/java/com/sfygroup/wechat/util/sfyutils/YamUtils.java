@@ -12,7 +12,6 @@ import java.util.*;
 
 /**
  * @author 你好
- * TODO 待完善，通过配置类间接生成的bean无法被重加载，待完善
  */
 public class YamUtils {
 

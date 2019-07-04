@@ -819,8 +819,11 @@ public class WeChatApiImpl implements WeChatApi {
         switch (message.msgType()) {
             case TEXT:
                 // 被艾特的消息
-                if (content.startsWith("@" + bot.session().getNickName())) {
-                    content = content.substring(content.indexOf(" "));
+                Boolean isAtMe = false;
+                String atSomeOne = "@" + bot.session().getNickName();
+                if (content.startsWith(atSomeOne)) {
+                    content = content.replace(atSomeOne,"");
+                    isAtMe = true;
                 }
                 // 位置消息
                 if (content.contains(LOCATION_IDENTIFY)) {
@@ -828,7 +831,9 @@ public class WeChatApiImpl implements WeChatApi {
                     content = content.substring(0, pos);
                     weChatMessageBuilder.isLocation(true).text(content);
                 }
-                return weChatMessageBuilder.text(content).build();
+                WeChatMessage build = weChatMessageBuilder.text(content).build();
+                build.setAtMe(isAtMe);
+                return build;
             // 聊天图片
             case IMAGE:
                 String imgPath = this.downloadImg(msgId);
@@ -1032,6 +1037,8 @@ public class WeChatApiImpl implements WeChatApi {
         return mediaResponse;
     }
 
+    private Map<String, String> mediaMap = new HashMap<>();
+
     /**
      * 发送文件
      *
@@ -1041,7 +1048,13 @@ public class WeChatApiImpl implements WeChatApi {
     @Override
     public boolean sendImg(String toUserName, String filePath) {
         DateUtils.sendSleep();
-        String mediaId = this.uploadMedia(toUserName, filePath).getMediaId();
+
+        String mediaId = mediaMap.get(filePath);
+        if (StringUtils.isEmpty(mediaId)) {
+            mediaId = this.uploadMedia(toUserName, filePath).getMediaId();
+            mediaMap.put(filePath,mediaId);
+        }
+
         if (StringUtils.isEmpty(mediaId)) {
             log.warn("Media为空");
             return false;

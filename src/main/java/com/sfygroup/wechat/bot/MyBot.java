@@ -74,37 +74,41 @@ public class MyBot extends WeChatBot {
      */
     @Bind(msgType = MsgType.ALL, accountType = AccountType.TYPE_GROUP)
     public void groupMessage(WeChatMessage message) {
-        String name = message.getName();
-        String text = message.getText();
-        if (!message.isAtMe()) {
-            return;
-        }
-
-        log.info("接收到群 [{}] 的消息: {}", name, text);
-        if (YamUtils.getStringProperty("community." + name) == null) {
-            return;
-        }
-
-        String key;
-        String[] split = text.split("\\|");
-        if (split.length > 1) {
-            //说明存在变化
-            key = split[0];
-        } else {
-            key = text;
-        }
-
-        String operation = YamUtils.getStringProperty("operation." + key);
-
-        if (operation != null) {
-            String filePath = "";
-            //说明存在操作设置
-            filePath = createMessage(operation, split);
-            // 目前仅支持返回文件
-            boolean b = this.api().sendImg(message.getFromUserName(), filePath);
-            if (!b) {
-                log.info("发送文件失败");
+        try {
+            String name = message.getName();
+            String text = message.getText();
+            if (!message.isAtMe()) {
+                return;
             }
+
+            log.info("接收到群 [{}] 的消息: {}", name, text);
+            if (YamUtils.getStringProperty("community." + name) == null) {
+                return;
+            }
+
+            String key;
+            String[] split = text.split("\\|");
+            if (split.length > 1) {
+                //说明存在变化
+                key = split[0];
+            } else {
+                key = text;
+            }
+            key = key.trim().replace(" ","");
+            String operation = YamUtils.getStringProperty("operation." + key);
+
+            if (operation != null) {
+                String filePath = "";
+                //说明存在操作设置
+                filePath = createMessage(operation, split);
+                // 目前仅支持返回文件
+                boolean b = this.api().sendImg(message.getFromUserName(), filePath);
+                if (!b) {
+                    log.info("发送文件失败");
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -147,18 +151,18 @@ public class MyBot extends WeChatBot {
                 instance.set(Calendar.SECOND, 0);
                 Date time = instance.getTime();
                 TimeUnit timeUnit = TimeUnit.valueOf(YamUtils.getStringProperty("schedule.unit"));
-                long convert = timeUnit.convert(instance.getTimeInMillis() - System.currentTimeMillis(), timeUnit)/1000;
+                long convert = timeUnit.convert(instance.getTimeInMillis() - System.currentTimeMillis(), timeUnit) / 1000;
                 executorService.scheduleAtFixedRate(new TimerTask() {
                                                         @Override
                                                         public void run() {
                                                             mockGroupMessage();
                                                         }
                                                     },
-                        convert ,
+                        convert,
                         Long.valueOf(delay),
                         timeUnit
-                        );
-                log.info(admin + "启动了定时器任务,第一次启动时间{},距今延迟{}", DateUtil.getStrDate(time, "yyyy-MM-dd hh:mm:ss"),convert);
+                );
+                log.info(admin + "启动了定时器任务,第一次启动时间{},距今延迟{}", DateUtil.getStrDate(time, "yyyy-MM-dd hh:mm:ss"), convert);
             } else if (text != null && YamUtils.getStringProperty("timer.operation.shutdown").equals(text)) {
                 if (executorService != null) {
                     executorService.shutdown();

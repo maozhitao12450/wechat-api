@@ -94,7 +94,7 @@ public class MyBot extends WeChatBot {
             } else {
                 key = text;
             }
-            key = key.trim().replace(" ","");
+            key = key.trim().replace(" ", "");
             String operation = YamUtils.getStringProperty("operation." + key);
 
             if (operation != null) {
@@ -121,10 +121,12 @@ public class MyBot extends WeChatBot {
      */
     @Bind(msgType = {MsgType.TEXT, MsgType.VIDEO, MsgType.IMAGE, MsgType.EMOTICONS}, accountType = AccountType.TYPE_FRIEND)
     public void friendMessage(WeChatMessage message) {
+
+        Account account = this.api().getAccountById(message.getFromUserName());
         String text = message.getText();
-        String admin = YamUtils.getStringProperty("adminUser." + message.getFromNickName());
+        String admin = YamUtils.getStringProperty("adminUser." + account.getNickName());
         if (admin == null) {
-            admin = YamUtils.getStringProperty("adminUser." + message.getFromRemarkName());
+            admin = YamUtils.getStringProperty("adminUser." + account.getRemarkName());
         }
         if (admin != null) {
             if (text != null && YamUtils.getStringProperty("timer.operation.startup").equals(text)) {
@@ -143,7 +145,7 @@ public class MyBot extends WeChatBot {
                             "】，hour【" + hour + "】，delay【" + delay + "】");
                     return;
                 }
-
+                Long delayLong = Long.valueOf(delay);
 
                 Calendar instance = Calendar.getInstance();
                 instance.set(Calendar.HOUR, Integer.valueOf(hour));
@@ -151,7 +153,19 @@ public class MyBot extends WeChatBot {
                 instance.set(Calendar.SECOND, 0);
                 Date time = instance.getTime();
                 TimeUnit timeUnit = TimeUnit.valueOf(YamUtils.getStringProperty("schedule.unit"));
-                long convert = timeUnit.convert(instance.getTimeInMillis() - System.currentTimeMillis(), timeUnit) / 1000;
+                // 当前时间
+                long now = System.currentTimeMillis();
+                // 默认时间
+                long target = instance.getTimeInMillis();
+                long convert = 0;
+                if (now > target) {
+                    convert = timeUnit.convert(now - instance.getTimeInMillis(), timeUnit) / 1000;
+                } else {
+                    //计算超时多长时间
+                    convert = timeUnit.convert(instance.getTimeInMillis() - now, timeUnit) / 1000;
+                    convert = convert % delayLong;
+                }
+
                 executorService.scheduleAtFixedRate(new TimerTask() {
                                                         @Override
                                                         public void run() {
@@ -159,7 +173,7 @@ public class MyBot extends WeChatBot {
                                                         }
                                                     },
                         convert,
-                        Long.valueOf(delay),
+                        delayLong,
                         timeUnit
                 );
                 log.info(admin + "启动了定时器任务,第一次启动时间{},距今延迟{}", DateUtil.getStrDate(time, "yyyy-MM-dd hh:mm:ss"), convert);

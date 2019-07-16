@@ -158,11 +158,12 @@ public class MyBot extends WeChatBot {
                 // 默认时间
                 long target = instance.getTimeInMillis();
                 long convert = 0;
+                long length = now - instance.getTimeInMillis();
                 if (now > target) {
-                    convert = timeUnit.convert(now - instance.getTimeInMillis(), timeUnit) / 1000;
+                    convert = timeUnit.convert(delayLong - length, timeUnit) / 1000;
                 } else {
                     //计算超时多长时间
-                    convert = timeUnit.convert(instance.getTimeInMillis() - now, timeUnit) / 1000;
+                    convert = timeUnit.convert(length, timeUnit) / 1000;
                     convert = convert % delayLong;
                 }
 
